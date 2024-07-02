@@ -13,6 +13,8 @@ type Option func(*RouterConfig)
 
 type RouterConfig struct {
 	RouterConfigPath     string
+	PlaygroundPath       string
+	GraphqlPath          string
 	TelemetryServiceName string
 	RouterOpts           []core.Option
 	GraphApiToken        string
@@ -51,6 +53,14 @@ func NewRouter(opts ...Option) *core.Router {
 		core.WithAwsLambdaRuntime(),
 		core.WithGraphApiToken(rc.GraphApiToken),
 		core.WithCompression(rc.EnableCompression),
+	}
+
+	if rc.PlaygroundPath != "" {
+		routerOpts = append(routerOpts, core.WithPlaygroundPath(rc.PlaygroundPath))
+	}
+
+	if rc.GraphqlPath != "" {
+		routerOpts = append(routerOpts, core.WithGraphQLPath(rc.GraphqlPath))
 	}
 
 	if rc.HttpPort != "" {
@@ -99,6 +109,18 @@ func NewRouter(opts ...Option) *core.Router {
 func WithRouterConfigPath(path string) Option {
 	return func(r *RouterConfig) {
 		r.RouterConfigPath = path
+	}
+}
+
+func WithPlaygroundPath(path string) Option {
+	return func(r *RouterConfig) {
+		r.PlaygroundPath = path
+	}
+}
+
+func WithGraphQLPath(path string) Option {
+	return func(r *RouterConfig) {
+		r.GraphqlPath = path
 	}
 }
 

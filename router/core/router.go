@@ -142,6 +142,7 @@ type (
 		graphqlPath              string
 		playground               bool
 		introspection            bool
+		compression              bool
 		graphApiToken            string
 		healthCheckPath          string
 		healthChecks             health.Checker
@@ -522,6 +523,7 @@ func (r *Router) updateServerAndStart(ctx context.Context, cfg *nodev1.RouterCon
 			zap.String("listen_addr", r.listenAddr),
 			zap.Bool("playground", r.playground),
 			zap.Bool("introspection", r.introspection),
+			zap.Bool("compression", r.compression),
 			zap.String("config_version", cfg.GetVersion()),
 		)
 
@@ -942,6 +944,7 @@ func (r *Router) newServer(ctx context.Context, routerConfig *nodev1.RouterConfi
 		return nil, fmt.Errorf("failed to build feature flag handler: %w", err)
 	}
 
+
 	brCompressor := middleware.NewCompressor(5, CustomCompressibleContentTypes...)
 	brCompressor.SetEncoder("br", func(w io.Writer, level int) io.Writer {
 		return br.NewWriterLevel(w, level)
@@ -952,10 +955,12 @@ func (r *Router) newServer(ctx context.Context, routerConfig *nodev1.RouterConfi
 	 */
 	httpRouter.Group(func(cr chi.Router) {
 
-		// We are applying it conditionally because brotli compressing the 3MB playground is very slow
-		cr.Use(middleware.Compress(5, CustomCompressibleContentTypes...))
-		cr.Use(brCompressor.Handler)
-
+		if(r.compression) {
+			// We are applying it conditionally because brotli compressing the 3MB playground is very slow
+			cr.Use(middleware.Compress(5, CustomCompressibleContentTypes...))
+			cr.Use(brCompressor.Handler)
+		}
+		
 		// Mount the feature flag handler. It calls the base mux if no feature flag is set.
 		cr.Mount(r.graphqlPath, multiGraphHandler)
 
@@ -1155,6 +1160,12 @@ func WithPlayground(enable bool) Option {
 func WithIntrospection(enable bool) Option {
 	return func(r *Router) {
 		r.introspection = enable
+	}
+}
+
+func WithCompression(enable bool) Option {
+	return func(r *Router) {
+		r.compression = enable
 	}
 }
 

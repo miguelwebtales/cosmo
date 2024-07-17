@@ -28,6 +28,9 @@ func NewRouter(opts ...Option) *core.Router {
 
 	rc := &RouterConfig{}
 
+
+
+
 	for _, opt := range opts {
 		opt(rc)
 	}
@@ -68,6 +71,7 @@ func NewRouter(opts ...Option) *core.Router {
 		routerOpts = append(routerOpts, core.WithWithSubgraphErrorPropagation(cfg.SubgraphErrorPropagation))
 		routerOpts = append(routerOpts, core.WithGraphQLPath(cfg.GraphQLPath))
 		routerOpts = append(routerOpts, core.WithPlaygroundPath(cfg.PlaygroundPath))
+		routerOpts = append(routerOpts, core.WithCompression(cfg.CompressionEnabled))
 
 	}
 

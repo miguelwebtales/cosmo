@@ -7,6 +7,7 @@ import (
 	"github.com/wundergraph/cosmo/router/pkg/config"
 	"github.com/wundergraph/cosmo/router/pkg/metric"
 	"github.com/wundergraph/cosmo/router/pkg/trace"
+	"github.com/wundergraph/cosmo/router/pkg/cors"
 	"go.uber.org/zap"
 )
 
@@ -65,6 +66,15 @@ func NewRouter(opts ...Option) *core.Router {
 		cfg := &result.Config;
 
 		routerOpts = append(routerOpts, core.WithHeaderRules(cfg.Headers))
+		
+		routerOpts = append(routerOpts, core.WithCors(&cors.Config{
+			AllowOrigins:     cfg.CORS.AllowOrigins,
+			AllowMethods:     cfg.CORS.AllowMethods,
+			AllowCredentials: cfg.CORS.AllowCredentials,
+			AllowHeaders:     cfg.CORS.AllowHeaders,
+			MaxAge:           cfg.CORS.MaxAge,
+		}));
+
 		routerOpts = append(routerOpts, core.WithWithSubgraphErrorPropagation(cfg.SubgraphErrorPropagation))
 		routerOpts = append(routerOpts, core.WithGraphQLPath(cfg.GraphQLPath))
 		routerOpts = append(routerOpts, core.WithPlaygroundPath(cfg.PlaygroundPath))
